@@ -6,6 +6,6 @@ public class Coin : MonoBehaviour
 {
     private void Update()
     {
-        transform.Rotate(Vector3.up, .1f, Space.World);
+        transform.Rotate(Vector3.up, .5f, Space.World);
     }
 }

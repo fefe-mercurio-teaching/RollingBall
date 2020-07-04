@@ -1,43 +1,70 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] float speed;
+    [SerializeField] float forceIntensity;
+    [SerializeField] float jumpIntensity;
 
     int score = 0;
+    Rigidbody rb;
 
-    private void Update()
+    private void Start()
     {
-        Vector3 movement = Vector3.zero;
+        rb = GetComponent<Rigidbody>();
+    }
 
+
+    private void FixedUpdate()
+    {
         if (Input.GetKey(KeyCode.W))
         {
-            movement.z += 1f;
+            rb.AddForce(Vector3.forward * forceIntensity);
         }
 
         if (Input.GetKey(KeyCode.S))
         {
-            movement.z -= 1f;
+            rb.AddForce(Vector3.back * forceIntensity);
         }
 
         if (Input.GetKey(KeyCode.A))
         {
-            movement.x -= 1f;
+            rb.AddForce(Vector3.left * forceIntensity);
         }
 
         if (Input.GetKey(KeyCode.D))
         {
-            movement.x += 1f;
+            rb.AddForce(Vector3.right * forceIntensity);
         }
 
-        transform.Translate(movement * speed, Space.World);
+        
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, Vector3.down, 1f))
+        {
+            rb.AddForce(Vector3.up * jumpIntensity, ForceMode.Impulse);
+        }
+
+        if (transform.position.y <= -10f)
+        {
+            SceneManager.LoadScene("SampleScene");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Destroy(other.gameObject);
-        score++;
+        if (other.tag == "Coin")
+        {
+            Destroy(other.gameObject);
+            score++;
+        }
+        else if (other.tag == "EndLevel")
+        {
+            Debug.Log("Fine livello");
+        }
     }
 }
