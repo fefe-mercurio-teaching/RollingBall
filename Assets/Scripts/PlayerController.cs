@@ -2,18 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] float forceIntensity;
     [SerializeField] float jumpIntensity;
+    [SerializeField] Text scoreTextMesh;
+    [SerializeField] Text timeTextMesh;
+    [SerializeField] string nextLevel;
+    [SerializeField] Image[] hearts;
 
-    int score = 0;
+    static int score = 0;
+    static int life = 3;
+
+    float time = 0f;
     Rigidbody rb;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        UpdateScoreText();
+        UpdateTimeText();
+        UpdateLifeTracker();
     }
 
 
@@ -44,6 +56,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        time += Time.deltaTime;
+        UpdateTimeText();
+
         if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, Vector3.down, 1f))
         {
             rb.AddForce(Vector3.up * jumpIntensity, ForceMode.Impulse);
@@ -51,7 +66,17 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.y <= -10f)
         {
-            SceneManager.LoadScene("SampleScene");
+            life--;
+
+            if (life <= 0)
+            {
+                SceneManager.LoadScene("GameOver");
+
+            }
+            else
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
         }
     }
 
@@ -61,10 +86,56 @@ public class PlayerController : MonoBehaviour
         {
             Destroy(other.gameObject);
             score++;
+
+            UpdateScoreText();
         }
         else if (other.tag == "EndLevel")
         {
-            Debug.Log("Fine livello");
+            SceneManager.LoadScene(nextLevel);
         }
+    }
+
+    void UpdateLifeTracker()
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].gameObject.SetActive(i < life);
+        }
+
+
+        //if (life >= 3)
+        //{
+        //    hearts[0].gameObject.SetActive(true);
+        //    hearts[1].gameObject.SetActive(true);
+        //    hearts[2].gameObject.SetActive(true);
+        //}
+        //else if (life == 2)
+        //{
+        //    hearts[0].gameObject.SetActive(true);
+        //    hearts[1].gameObject.SetActive(true);
+        //    hearts[2].gameObject.SetActive(false);
+        //}
+        //else if (life == 1)
+        //{
+        //    hearts[0].gameObject.SetActive(true);
+        //    hearts[1].gameObject.SetActive(false);
+        //    hearts[2].gameObject.SetActive(false);
+        //}
+    }
+
+    void UpdateScoreText()
+    {
+        scoreTextMesh.text = "Punti: " + score;
+    }
+
+    void UpdateTimeText()
+    {
+        timeTextMesh.text = "Tempo: " + time.ToString("0:##");
+        //timeTextMesh.text = "Tempo: " + Mathf.RoundToInt(time);
+    }
+
+    bool GameOver()
+    {
+        return life <= 0;
     }
 }
